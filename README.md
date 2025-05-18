@@ -156,7 +156,7 @@ If you prefer to run the project directly on your machine without Docker:
 9.  **Access the application:**
     Open your browser and go to `http://localhost:8000`.
 
-## Project Structure (Example)
+## Project Structure
 
 ```text
 .
