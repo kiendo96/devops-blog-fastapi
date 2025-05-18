@@ -1,0 +1,27 @@
+<div class="list-group sticky-top">
+    <a href="{{ url_for('admin_dashboard_page') }}" 
+       class="list-group-item list-group-item-action {% if request.url.path == (url_for('admin_dashboard_page') | string) %}active{% endif %}" 
+       aria-current="{% if request.url.path == (url_for('admin_dashboard_page') | string) %}true{% else %}false{% endif %}">
+        <i class="fas fa-tachometer-alt fa-fw me-2"></i>Dashboard
+    </a>
+    <a href="{{ url_for('admin_manage_users_page') }}" 
+       class="list-group-item list-group-item-action {% if request.url.path.startswith(url_for('admin_manage_users_page') | string) %}active{% endif %}"
+       aria-current="{% if request.url.path.startswith(url_for('admin_manage_users_page') | string) %}true{% else %}false{% endif %}">
+        <i class="fas fa-users fa-fw me-2"></i>Quản lý Người dùng
+    </a>
+    <a href="{{ url_for('admin_manage_posts_page') }}" 
+       class="list-group-item list-group-item-action {% if request.url.path.startswith(url_for('admin_manage_posts_page') | string) %}active{% endif %}"
+       aria-current="{% if request.url.path.startswith(url_for('admin_manage_posts_page') | string) %}true{% else %}false{% endif %}">
+        <i class="fas fa-file-alt fa-fw me-2"></i>Quản lý Bài viết
+    </a>
+    <a href="{{ url_for('admin_manage_comments_page') }}" 
+       class="list-group-item list-group-item-action {% if request.url.path.startswith(url_for('admin_manage_comments_page') | string) %}active{% endif %}"
+       aria-current="{% if request.url.path.startswith(url_for('admin_manage_comments_page') | string) %}true{% else %}false{% endif %}">
+        <i class="fas fa-comments fa-fw me-2"></i>Quản lý Bình luận
+    </a>
+    <a href="{{ url_for('admin_manage_tags_page') }}"  {# MỚI #}
+       class="list-group-item list-group-item-action {% if request.url.path.startswith(url_for('admin_manage_tags_page') | string) %}active{% endif %}"
+       aria-current="{% if request.url.path.startswith(url_for('admin_manage_tags_page') | string) %}true{% else %}false{% endif %}">
+        <i class="fas fa-tags fa-fw me-2"></i>Quản lý Tags
+    </a>
+</div>

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Admin - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-3">
+            {% include "admin/_admin_sidebar.html" %}
+        </div>
+        <div class="col-lg-10 col-md-9">
+            <h2 class="mb-4">{{ page_title }}</h2>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin người dùng</h5>
+                    <p><strong>ID:</strong> {{ user_to_edit.id }}</p>
+                    <p><strong>Tên đăng nhập:</strong> {{ user_to_edit.username }}</p>
+                    <p><strong>Email:</strong> {{ user_to_edit.email }}</p>
+
+                    <hr>
+                    <h5 class="card-title mt-4">Cập nhật thông tin</h5>
+                    <form method="post" action="{{ url_for('admin_handle_edit_user_form', user_id=user_to_edit.id) }}">
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Tên đầy đủ:</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user_to_edit.full_name or '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Tiểu sử ngắn (Bio):</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="3">{{ user_to_edit.bio or '' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="profile_picture_url" class="form-label">URL Ảnh Profile:</label>
+                            <input type="url" class="form-control" id="profile_picture_url" name="profile_picture_url" value="{{ user_to_edit.profile_picture_url or '' }}" placeholder="https://example.com/profile.jpg">
+                            {% if user_to_edit.profile_picture_url %}
+                                <div class="mt-2">
+                                    <img src="{{ user_to_edit.profile_picture_url }}" alt="Ảnh profile hiện tại" style="max-width: 100px; max-height: 100px; border-radius: 50%;">
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="website_url" class="form-label">Website cá nhân:</label>
+                            <input type="url" class="form-control" id="website_url" name="website_url" value="{{ user_to_edit.website_url or '' }}" placeholder="https://mywebsite.com">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="linkedin_url" class="form-label">LinkedIn URL:</label>
+                            <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" value="{{ user_to_edit.linkedin_url or '' }}" placeholder="https://linkedin.com/in/yourprofile">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="github_url" class="form-label">GitHub URL:</label>
+                            <input type="url" class="form-control" id="github_url" name="github_url" value="{{ user_to_edit.github_url or '' }}" placeholder="https://github.com/yourusername">
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active_form" name="is_active_form" value="on"
+                                   {% if user_to_edit.is_active %}checked{% endif %}
+                                   {% if user_to_edit.id == current_user.id %}disabled title="Không thể tự vô hiệu hóa tài khoản của chính mình."{% endif %}>
+                            <label class="form-check-label" for="is_active_form">Kích hoạt tài khoản</label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_admin_form" name="is_admin_form" value="on"
+                                   {% if user_to_edit.is_admin %}checked{% endif %}
+                                   {% if user_to_edit.id == current_user.id %}disabled title="Không thể tự bỏ quyền admin của chính mình."{% endif %}>
+                            <label class="form-check-label" for="is_admin_form">Là Quản trị viên (Admin)</label>
+                        </div>
+
+                        <a href="{{ url_for('admin_manage_users_page') }}" class="btn btn-secondary me-2">Hủy</a>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

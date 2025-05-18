@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+pydantic-settings
+pydantic[email]
+python-jose[cryptography]
+passlib[bcrypt]
+alembic
+jinja2
+python-multipart
+itsdangerous
+Pillow
+# psycopg2-binary
+# mysqlclient

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Admin - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-3">
+            {% include "admin/_admin_sidebar.html" %}
+        </div>
+        <div class="col-lg-10 col-md-9">
+            <h2 class="mb-4">{{ page_title }}</h2>
+            <p>Chào mừng quản trị viên, <strong>{{ current_user.full_name or current_user.username }}</strong>!</p>
+            <p>Đây là trang quản trị của bạn. Từ đây bạn có thể quản lý người dùng, bài viết, và các nội dung khác.</p>
+            
+            <hr class="my-4">
+            <h4>Thông tin nhanh:</h4>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-header"><i class="fas fa-users me-2"></i>Người dùng</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ total_users or 0 }}</h5>
+                            <p class="card-text">Tổng số người dùng.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-header"><i class="fas fa-file-alt me-2"></i>Bài viết</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ total_posts or 0 }}</h5>
+                            <p class="card-text">Tổng số bài viết.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-header"><i class="fas fa-comments me-2"></i>Bình luận</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ total_comments or 0 }}</h5>
+                            <p class="card-text">Tổng số bình luận.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Admin - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-3">
+            {% include "admin/_admin_sidebar.html" %}
+        </div>
+        <div class="col-lg-10 col-md-9">
+            <h2 class="mb-4">{{ page_title }}</h2>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin bài viết</h5>
+                    <form method="post" action="{{ url_for('admin_handle_edit_post_form', post_id=post_to_edit.id) }}" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Tiêu đề:</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ post_to_edit.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Nội dung:</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required>{{ post_to_edit.content }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="featured_image_file" class="form-label">Thay đổi Ảnh Đại Diện:</label>
+                            <input type="file" class="form-control" id="featured_image_file" name="featured_image_file" accept="image/png, image/jpeg, image/gif, image/webp">
+                            <div class="form-text">Chọn file ảnh mới nếu muốn thay đổi (JPG, PNG, GIF, WEBP, tối đa 2MB). Để trống nếu không muốn thay đổi ảnh hiện tại.</div>
+                            {% if post_to_edit.featured_image_url %}
+                                <div class="mt-2">
+                                    <p class="mb-1 small">Ảnh hiện tại:</p>
+                                    <img src="{{ url_for('static', path=post_to_edit.featured_image_url) }}" alt="Ảnh đại diện hiện tại" style="max-width: 200px; max-height: 200px; border-radius: 0.25rem; object-fit: cover; border: 1px solid #dee2e6;">
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="checkbox" value="on" id="delete_featured_image" name="delete_featured_image">
+                                        <label class="form-check-label small" for="delete_featured_image">
+                                            Xóa ảnh đại diện hiện tại
+                                        </label>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tags_str" class="form-label">Cập nhật Tags (nhập danh sách mới, phân cách bởi dấu phẩy):</label>
+                            <input type="text" class="form-control" id="tags_str" name="tags_str" value="{{ tags_str }}" placeholder="Ví dụ: python, fastapi, tutorial">
+                            <div class="form-text">Để xóa tất cả tags, hãy để trống ô này.</div>
+                        </div>
+                        <p class="small text-muted">
+                            Tác giả: {{ post_to_edit.owner.username if post_to_edit.owner else 'N/A' }} |
+                            Ngày tạo: {{ post_to_edit.created_at.strftime('%d/%m/%Y %H:%M') if post_to_edit.created_at }}
+                        </p>
+                        
+                        <a href="{{ url_for('admin_manage_posts_page') }}" class="btn btn-secondary me-2">Hủy</a>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

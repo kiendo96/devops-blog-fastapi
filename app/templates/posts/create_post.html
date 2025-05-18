@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="mb-4">Tạo Bài Viết Mới</h2>
+
+    {% if error_message %}
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('handle_create_post_form') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Tiêu đề:</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ form_data.title or '' }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">Nội dung:</label>
+            <textarea class="form-control" id="content" name="content" rows="10" required>{{ form_data.content or '' }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="featured_image_file" class="form-label">Ảnh Đại Diện (tùy chọn):</label>
+            <input type="file" class="form-control" id="featured_image_file" name="featured_image_file" accept="image/png, image/jpeg, image/gif, image/webp">
+            <div class="form-text">Chọn file ảnh (JPG, PNG, GIF, WEBP, tối đa 2MB).</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="tags_str" class="form-label">Tags (phân cách bởi dấu phẩy):</label>
+            <input type="text" class="form-control" id="tags_str" name="tags_str" value="{{ form_data.tags_str or '' }}" placeholder="Ví dụ: python, fastapi, tutorial">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Đăng bài</button>
+    </form>
+</div>
+{% endblock %}

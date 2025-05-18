@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title | default(settings.PROJECT_NAME) }}{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" integrity="sha512-mIs9kKbCNKrEI7tlIZUKAJEcHδευσησωνδεβρεθυστارياتρεσσοναςελτ.Κλωνσταντινοπουλος, Κωνσταντινος Καραιωργος" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+            <div class="container">
+                <a class="navbar-brand" href="{{ url_for('home_page') }}">{{ settings.PROJECT_NAME }}</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path == (url_for('home_page') | string) %}active{% endif %}" aria-current="page" href="{{ url_for('home_page') }}">Trang Chủ</a>
+                        </li>
+                        {% if current_user %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'posts/new' in request.url.path %}active{% endif %}" href="{{ url_for('create_post_page_get') }}">Tạo Bài Mới</a>
+                        </li>
+                        {% endif %}
+                        {% if current_user and current_user.is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.url.path.startswith('/admin') %}active{% endif %}" href="{{ url_for('admin_dashboard_page') }}">Quản trị</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if current_user %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Xin chào, {{ current_user.full_name or current_user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                                    <li><a class="dropdown-item" href="#">Trang cá nhân</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('logout_action') }}">Đăng xuất</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'login' in request.url.path %}active{% endif %}" href="{{ url_for('login_page_get') }}">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if 'register' in request.url.path %}active{% endif %}" href="{{ url_for('register_page_get') }}">Đăng ký</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item ms-lg-2">
+                            <button id="theme-toggle" class="theme-toggle-button nav-link" title="Chuyển đổi theme Sáng/Tối">
+                                <i class="fas fa-moon"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    {% with messages = request.session.pop('flash_messages', []) %}
+        {% if messages %}
+            <div class="container mt-3 position-fixed top-0 start-50 translate-middle-x" style="z-index: 1050; width: auto; max-width: 80%;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category or 'info' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="container mt-4 main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; {{ get_current_year() }} {{ settings.PROJECT_NAME }}. All rights reserved.</p>
+        </div>
+    </footer>
+
+    {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js" integrity="sha512-9khQRAUBXEdtdMh/d2TRHxrdaMTPROD4CIFMoDUJS+wRNoLp10LOo3qP2h5+1Gqlsck4pIYLpLjpWvb7zS4XnQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" integrity="sha512-SfpkpcvH_L5sOTX838q794P2_Yy6fP0hL8N4bX65x28oX1zZ7jS0M5P8i49gJ1wMv5h5XW9vC4FvA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="{{ url_for('static', path='js/theme-toggle.js') }}"></script>
+    {% endblock scripts %}
+</body>
+</html>

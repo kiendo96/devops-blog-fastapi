@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="post-detail">
+    <article>
+        {% if post.featured_image_url %}
+            {% if post.featured_image_url.startswith('http') %}
+                <img src="{{ post.featured_image_url }}" class="img-fluid rounded mb-4 featured-image-detail" alt="Ảnh đại diện: {{ post.title }}">
+            {% else %}
+                 <img src="{{ url_for('static', path=post.featured_image_url) }}" class="img-fluid rounded mb-4 featured-image-detail" alt="Ảnh đại diện: {{ post.title }}">
+            {% endif %}
+        {% endif %}
+
+        <h2 class="mb-3">{{ post.title }}</h2>
+        <p class="post-meta">
+            Người đăng: 
+            {% if post.owner %}
+                <a href="#">{{ post.owner.username }}</a>
+            {% else %}
+                N/A
+            {% endif %}
+            |
+            Ngày đăng: {{ post.created_at.strftime('%d/%m/%Y %H:%M') if post.created_at }}
+        </p>
+        {% if post.tags %}
+        <div class="mb-3 post-tags">
+            <strong>Tags:</strong>
+            {% for tag_obj in post.tags %}
+            <a href="{{ request.url_for('home_page') }}?tags={{ tag_obj.name|urlencode }}" class="tag">{{ tag_obj.name }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <hr>
+        <div class="post-content">
+            {{ post.content | safe }}
+        </div>
+    </article>
+
+    {% if current_user and post.owner_id == current_user.id %}
+    <div class="mt-4 post-actions">
+    </div>
+    {% endif %}
+
+    {% if post.owner %}
+    <div class="author-box">
+        <div class="author-box-image">
+            {% if post.owner.profile_picture_url %}
+                {% if post.owner.profile_picture_url.startswith('http') %}
+                    <img src="{{ post.owner.profile_picture_url }}" alt="{{ post.owner.username }}">
+                {% else %}
+                    <img src="{{ url_for('static', path=post.owner.profile_picture_url) }}" alt="{{ post.owner.username }}">
+                {% endif %}
+            {% else %}
+                <img src="https://via.placeholder.com/80?text={{ post.owner.username[0]|upper }}" alt="{{ post.owner.username }}">
+            {% endif %}
+        </div>
+        <div class="author-box-info">
+            <h4>
+                {% if post.owner.website_url %}
+                    <a href="{{ post.owner.website_url }}" target="_blank" rel="noopener noreferrer">{{ post.owner.full_name or post.owner.username }}</a>
+                {% else %}
+                    {{ post.owner.full_name or post.owner.username }}
+                {% endif %}
+            </h4>
+            {% if post.owner.bio %}
+                <p class="author-bio">{{ post.owner.bio }}</p>
+            {% endif %}
+            <div class="author-box-socials">
+                {% if post.owner.website_url %}
+                    <a href="{{ post.owner.website_url }}" target="_blank" rel="noopener noreferrer" title="Website"><i class="fas fa-globe"></i></a>
+                {% endif %}
+                {% if post.owner.linkedin_url %}
+                    <a href="{{ post.owner.linkedin_url }}" target="_blank" rel="noopener noreferrer" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                {% endif %}
+                {% if post.owner.github_url %}
+                    <a href="{{ post.owner.github_url }}" target="_blank" rel="noopener noreferrer" title="GitHub"><i class="fab fa-github"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <hr class="my-4">
+
+    <section id="comments_section" class="comments-section">
+        <h3>Bình luận ({{ comments|length if comments else 0 }})</h3>
+        {% if current_user %}
+        <form class="comment-form mb-4" method="post"
+            action="{{ url_for('handle_create_comment_form', post_id=post.id) }}">
+            <div class="mb-3">
+                <label for="comment_text" class="form-label">Viết bình luận của bạn:</label>
+                <textarea class="form-control" id="comment_text" name="comment_text" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Gửi bình luận</button>
+        </form>
+        {% else %}
+        <p><a href="{{ login_base_url }}?next={{ redirect_target_url | urlencode }}">Đăng nhập</a> để bình luận.</p>
+        {% endif %}
+
+        <ul class="list-unstyled comment-list">
+            {% if comments %}
+            {% for comment in comments %}
+            <li class="comment-item mb-3 p-3 bg-light border rounded" id="comment-{{ comment.id }}">
+                <p class="mb-1">
+                    <strong>{{ comment.owner.username if comment.owner else "Anonymous" }}:</strong>
+                </p>
+                <p class="mb-1 comment-text-display">{{ comment.text }}</p>
+                <small class="text-muted">Vào lúc: {{ comment.created_at.strftime('%d/%m/%Y %H:%M') if
+                    comment.created_at }}</small>
+
+                {% if current_user and comment.owner_id == current_user.id %}
+                <button class="btn btn-sm btn-outline-danger mt-1 delete-comment-btn" data-comment-id="{{ comment.id }}"
+                    data-delete-url="{{ url_for('delete_comment_api', comment_id=comment.id) }}">Xóa</button>
+                {% endif %}
+            </li>
+            {% endfor %}
+            {% else %}
+            <p>Chưa có bình luận nào cho bài viết này.</p>
+            {% endif %}
+        </ul>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deleteButtons = document.querySelectorAll('.delete-comment-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const commentId = this.dataset.commentId;
+            const deleteUrl = this.dataset.deleteUrl;
+
+            if (confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
+                fetch(deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        const commentElement = document.getElementById('comment-' + commentId);
+                        if (commentElement) {
+                            commentElement.remove();
+                        }
+                    } else {
+                        response.json().then(data => {
+                            alert('Lỗi khi xóa bình luận: ' + (data.detail || response.statusText));
+                        }).catch(() => {
+                            alert('Lỗi khi xóa bình luận: ' + response.statusText);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting comment:', error);
+                    alert('Đã xảy ra lỗi kết nối khi xóa bình luận.');
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

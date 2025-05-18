@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title | default(settings.PROJECT_NAME) }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <section class="hero-section text-center py-5 mb-5">
+        <div class="container">
+            <h1 class="display-4 fw-bold site-title">{{ settings.PROJECT_NAME }}</h1>
+            <p class="lead text-muted site-description">Nơi chia sẻ kiến thức và kinh nghiệm về Devops.</p>
+        </div>
+    </section>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-9">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+                {% if current_user %}
+                    <a href="{{ url_for('create_post_page_get') }}" class="btn btn-success mb-2 mb-md-0"><i class="fas fa-plus-circle"></i> Viết bài mới</a>
+                {% else %}
+                    <div></div> 
+                {% endif %}
+
+                <form method="get" action="{{ request.url_for('home_page') }}" class="ms-md-auto search-filter-form">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm bài viết..." value="{{ search_query or '' }}" aria-label="Tìm kiếm bài viết">
+                        <input type="text" name="tags" class="form-control" placeholder="Lọc theo tags (vd: python,api)" value="{{ active_tags_string or '' }}" aria-label="Lọc theo tags">
+                        <button type="submit" class="btn btn-outline-primary">Tìm</button>
+                         {% if search_query or active_tags_string %}
+                            <a href="{{ request.url_for('home_page') }}" class="btn btn-outline-danger"><i class="fas fa-times"></i> Xóa lọc</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            
+            {% if posts %}
+                <div class="row posts-listing">
+                    {% for post_item in posts %}
+                    <div class="col-md-6 col-lg-4 mb-4 d-flex align-items-stretch"> 
+                        <article class="card blog-post-card w-100">
+                            {% if post_item.featured_image_url %}
+                            <a href="{{ url_for('read_single_post_page', post_id=post_item.id) }}">
+                                {% if post_item.featured_image_url.startswith('http') %}
+                                    <img src="{{ post_item.featured_image_url }}" class="card-img-top" alt="Ảnh đại diện {{ post_item.title }}">
+                                {% else %}
+                                    <img src="{{ url_for('static', path=post_item.featured_image_url) }}" class="card-img-top" alt="Ảnh đại diện {{ post_item.title }}">
+                                {% endif %}
+                            </a>
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h2 class="card-title h4">
+                                    <a href="{{ url_for('read_single_post_page', post_id=post_item.id) }}" class="text-decoration-none blog-post-title">
+                                        {{ post_item.title }}
+                                    </a>
+                                </h2>
+                                <p class="card-text post-meta text-muted small mb-2">
+                                    {% if post_item.owner %}
+                                        <span class="author-meta"><i class="fas fa-user fa-fw"></i> Bởi: {{ post_item.owner.username }}</span> |
+                                    {% endif %}
+                                    <span class="date-meta"><i class="fas fa-calendar-alt fa-fw"></i> Ngày: {{ post_item.created_at.strftime('%d/%m/%Y') if post_item.created_at }}</span>
+                                    {% if post_item.tags %}
+                                    | <span class="tags-meta"><i class="fas fa-tags fa-fw"></i> Tags:
+                                        {% for tag_obj in post_item.tags %}
+                                            <a href="{{ request.url_for('home_page') }}?tags={{ tag_obj.name|urlencode }}" class="text-decoration-none tag-link">{{ tag_obj.name }}</a>{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                    {% endif %}
+                                </p>
+                                <p class="card-text post-excerpt">
+                                    {{ post_item.content[:120] ~ '...' if post_item.content|length > 120 else post_item.content }}
+                                </p>
+                                <a href="{{ url_for('read_single_post_page', post_id=post_item.id) }}" class="btn btn-sm btn-outline-primary read-more-btn mt-auto">Đọc thêm &raquo;</a> {# mt-auto để đẩy nút xuống dưới #}
+                            </div>
+                        </article>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if total_pages > 1 %}
+                <nav aria-label="Page navigation" class="mt-4 d-flex justify-content-center">
+                    {% set base_pagination_url_str = request.url_for('home_page') | string | trim %}
+                    {% from "_pagination_frontend.html" import render_frontend_pagination %}
+                    {{ render_frontend_pagination(
+                        base_pagination_url_str=base_pagination_url_str,
+                        current_page_num=page, 
+                        total_pages=total_pages, 
+                        has_previous=has_previous, 
+                        has_next=has_next, 
+                        query_params=request.query_params
+                      ) 
+                    }}
+                </nav>
+                {% endif %}
+
+            {% else %}
+                <div class="alert alert-info text-center">
+                    <p class="mb-0">Chưa có bài viết nào được tìm thấy.</p>
+                    {% if search_query or active_tags_string %}
+                        <p class="mt-2">Hãy thử bỏ các bộ lọc hoặc tìm kiếm với từ khóa khác.</p>
+                         <p class="mt-1"><a href="{{ request.url_for('home_page') }}" class="btn btn-sm btn-link">Xóa tất cả bộ lọc</a></p>
+                    {% else %}
+                        {% if current_user %}
+                            <p class="mt-2">Hãy là người đầu tiên <a href="{{ url_for('create_post_page_get') }}">viết bài mới</a>!</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

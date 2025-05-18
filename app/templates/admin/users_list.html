@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% from "admin/_pagination.html" import render_pagination %}
+
+{% block title %}{{ page_title }} - Admin - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-3">
+            {% include "admin/_admin_sidebar.html" %}
+        </div>
+        <div class="col-lg-10 col-md-9">
+            <h2 class="mb-4">{{ page_title }}</h2>
+
+            {% if success_message %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ success_message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <form method="GET" action="{{ url_for('admin_manage_users_page') }}" class="mb-4">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="search" placeholder="Tìm theo Tên đăng nhập hoặc Email..." value="{{ search_query or '' }}">
+                    {% if current_page_size and current_page_size != 10 %}
+                    <input type="hidden" name="page_size" value="{{ current_page_size }}">
+                    {% endif %}
+                    <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i> Tìm kiếm</button>
+                    {% if search_query %}
+                        {% set clear_params = {} %}
+                        {% if current_page_size and current_page_size != 10 %}
+                             {% set _ = clear_params.update({'page_size': current_page_size}) %}
+                        {% endif %}
+                        <a href="{{ url_for('admin_manage_users_page', **clear_params) }}" class="btn btn-outline-danger"><i class="fas fa-times"></i> Xóa tìm</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            {% if users_list %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Tên đăng nhập</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Tên đầy đủ</th>
+                            <th scope="col" class="text-center">Kích hoạt?</th>
+                            <th scope="col" class="text-center">Admin?</th>
+                            <th scope="col" class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_item in users_list %}
+                        <tr>
+                            <th scope="row">{{ user_item.id }}</th>
+                            <td>{{ user_item.username }}</td>
+                            <td>{{ user_item.email }}</td>
+                            <td>{{ user_item.full_name or 'N/A' }}</td>
+                            <td class="text-center">
+                                {% if user_item.is_active %}
+                                <span class="badge bg-success rounded-pill">Có</span>
+                                {% else %}
+                                <span class="badge bg-danger rounded-pill">Không</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if user_item.is_admin %}
+                                <span class="badge bg-primary rounded-pill">Có</span>
+                                {% else %}
+                                <span class="badge bg-secondary rounded-pill">Không</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('admin_edit_user_form_page', user_id=user_item.id) }}"
+                                   class="btn btn-sm btn-primary me-1" title="Chỉnh sửa">
+                                    <i class="fas fa-edit"></i> Sửa
+                                </a>
+                                {% if user_item.id != current_user.id %}
+                                <form method="POST" action="{{ url_for('admin_delete_user_action', user_id=user_item.id) }}" style="display: inline;"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa người dùng {{ user_item.username }} và tất cả dữ liệu liên quan của họ không?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa người dùng">
+                                        <i class="fas fa-trash-alt"></i> Xóa
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% set base_pagination_url_str = request.url_for(base_url_name) | string %}
+            {{ render_pagination(
+                base_pagination_url_str=base_pagination_url_str,
+                current_page_num=current_page_num, 
+                total_pages=total_pages, 
+                has_previous=has_previous, 
+                has_next=has_next, 
+                current_page_size=current_page_size, 
+                query_params=query_params,
+                success_message_val=success_message
+              ) 
+            }}
+            <p class="text-center text-muted small mt-1">Hiển thị {{ users_list|length }} trên tổng số {{ total_items }} người dùng.</p>
+
+            {% else %}
+            <div class="alert alert-info mt-3" role="alert">
+                Không có người dùng nào trong hệ thống {% if search_query %}khớp với tìm kiếm của bạn{% endif %}.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

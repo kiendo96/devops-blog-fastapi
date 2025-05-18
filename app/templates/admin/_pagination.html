@@ -1,0 +1,72 @@
+{% macro render_pagination(base_pagination_url_str, current_page_num, total_pages, has_previous, has_next, current_page_size, query_params, success_message_val) %}
+    {% if total_pages > 1 %}
+
+    {% macro build_page_query_string(page_num_to_build_for, page_sz, current_query_params_local, success_msg_local) %}
+        {% set params = [] %}
+        {% if page_num_to_build_for > 0 %}
+            {% set _ = params.append("page=" + (page_num_to_build_for|string)) %}
+        {% endif %}
+        {% if page_sz %}
+            {% set _ = params.append("page_size=" + (page_sz|string)) %}
+        {% endif %}
+        
+        {% for key, val_list in current_query_params_local.multi_items() %}
+            {% if key not in ['page', 'page_size', 'message'] %}
+                {% for val_item in val_list %}
+                    {% set _ = params.append( (key|urlencode) + "=" + (val_item|urlencode) ) %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+        {{ params | join('&amp;') | safe }}
+    {% endmacro %}
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mt-4">
+            <li class="page-item {% if not has_previous %}disabled{% endif %}">
+                <a class="page-link"
+                   href="{{ base_pagination_url_str }}?{{ build_page_query_string(current_page_num - 1, current_page_size, query_params, success_message_val) | trim }}">
+                   Trước
+                </a>
+            </li>
+            {% set visible_pages_radius = 2 %} 
+            {% set start_page = [1, current_page_num - visible_pages_radius] | max %}
+            {% set end_page = [total_pages, current_page_num + visible_pages_radius] | min %}
+            
+            {% if end_page - start_page + 1 < (2 * visible_pages_radius + 1) and total_pages >= (2 * visible_pages_radius + 1) %}
+                {% if current_page_num < (total_pages - visible_pages_radius) %}
+                    {% set end_page = [total_pages, start_page + (2*visible_pages_radius)] | min %}
+                {% else %}
+                     {% set start_page = [1, end_page - (2*visible_pages_radius)] | max %}
+                {% endif %}
+            {% endif %}
+
+            {% if start_page > 1 %}
+                <li class="page-item"><a class="page-link"
+                        href="{{ base_pagination_url_str }}?{{ build_page_query_string(1, current_page_size, query_params, success_message_val) | trim }}">1</a></li>
+                {% if start_page > 2 %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+            {% endif %}
+
+            {% for page_num_iter in range(start_page, end_page + 1) %}
+            <li class="page-item {% if page_num_iter == current_page_num %}active{% endif %}">
+                <a class="page-link"
+                   href="{{ base_pagination_url_str }}?{{ build_page_query_string(page_num_iter, current_page_size, query_params, success_message_val) | trim }}">
+                   {{ page_num_iter }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if end_page < total_pages %}
+                {% if end_page < total_pages - 1 %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+                <li class="page-item"><a class="page-link"
+                        href="{{ base_pagination_url_str }}?{{ build_page_query_string(total_pages, current_page_size, query_params, success_message_val) | trim }}">{{ total_pages }}</a></li>
+            {% endif %}
+            <li class="page-item {% if not has_next %}disabled{% endif %}">
+                <a class="page-link"
+                   href="{{ base_pagination_url_str }}?{{ build_page_query_string(current_page_num + 1, current_page_size, query_params, success_message_val) | trim }}">
+                   Sau
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+{% endmacro %}

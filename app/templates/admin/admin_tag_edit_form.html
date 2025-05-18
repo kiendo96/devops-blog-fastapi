@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} - Admin - {{ settings.PROJECT_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-lg-2 col-md-3">
+            {% include "admin/_admin_sidebar.html" %}
+        </div>
+        <div class="col-lg-10 col-md-9">
+            <h2 class="mb-4">{{ page_title }}</h2>
+
+            {% if success_message %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ success_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin Tag</h5>
+                    <form method="post" action="{{ url_for('admin_handle_edit_tag_form', tag_id=tag_to_edit.id) }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Tên Tag:</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ tag_to_edit.name }}" required>
+                            <div class="form-text">Tên tag sẽ được tự động chuyển thành chữ thường khi lưu.</div>
+                        </div>
+                        <p class="small text-muted">
+                            ID Tag: {{ tag_to_edit.id }}
+                        </p>
+                        
+                        <a href="{{ url_for('admin_manage_tags_page') }}" class="btn btn-secondary me-2">Hủy</a>
+                        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
